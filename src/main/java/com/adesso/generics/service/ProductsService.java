@@ -2,7 +2,6 @@ package com.adesso.generics.service;
 
 import com.adesso.generics.model.Products;
 import com.adesso.generics.repository.ProductsJooqRepository;
-import com.adesso.generics.util.Calculate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,40 +9,46 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class ProductsService {
-
-    private final Calculate calculate;
+public class ProductsService implements BaseService<Products, Long> {
 
     private final ProductsJooqRepository productsRepository;
 
-    public ProductsService(Calculate calculate, ProductsJooqRepository productsRepository) {
-        this.calculate = calculate;
+    public ProductsService(ProductsJooqRepository productsRepository) {
         this.productsRepository = productsRepository;
     }
 
-    public Products createProduct(Products products) {
-        return productsRepository.save(products);
+    @Override
+    public Products create(Products entity) {
+        return productsRepository.save(entity);
     }
 
-    public Optional<Products> getProductById(Long id) {
+    @Override
+    public Optional<Products> getById(Long id) {
         return productsRepository.findById(id);
     }
 
-    public List<Products> getProducts() {
+    @Override
+    public List<Products> getAll() {
         return productsRepository.findAll();
     }
 
-    public Products updateProduct(Long id, Products products) {
-        return productsRepository.update(id, products);
+    @Override
+    public Products update(Long id, Products entity) {
+        return productsRepository.update(id, entity);
     }
 
-    public void deleteProductById(Long id) {
+    @Override
+    public void delete(Products entity) {
+        productsRepository.delete(entity);
+    }
+
+    @Override
+    public void deleteById(Long id) {
         productsRepository.deleteById(id);
     }
 
-    public Double calculateAveragePrice() {
-        List<Products> productsList = getProducts();
-
-        return calculate.calculateAverage(productsList.stream().map(Products::getPrice).collect(Collectors.toList()));
+    @Override
+    public Double calculate() {
+        return productsRepository.calculateAverage(getAll().stream().map(Products::getPrice).collect(Collectors.toList()));
     }
 }

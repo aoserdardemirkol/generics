@@ -20,32 +20,36 @@ public class ProductsController {
     @PostMapping
     public Products createProduct(@RequestBody ProductsDTO productsDTO) {
         Products products = new Products(productsDTO.name(), productsDTO.price());
-        return productsService.createProduct(products);
+        return productsService.create(products);
     }
 
     @GetMapping
     public List<Products> getAllProducts() {
-        return productsService.getProducts();
+        return productsService.getAll();
     }
 
     @GetMapping("/{id}")
-    public Products getProductById(@PathVariable Long id) {
-        return productsService.getProductById(id).orElse(null);
+    public Products getProductById(@PathVariable("id") Long id) {
+        if (productsService.getById(id).isPresent()) {
+            return productsService.getById(id).get();
+        } else {
+            throw new IllegalArgumentException("No product found with given id: " + id);
+        }
     }
 
     @PutMapping("/{id}")
-    public Products updateProduct(@PathVariable Long id, @RequestBody ProductsDTO productsDTO) {
+    public Products updateProduct(@PathVariable("id") Long id, @RequestBody ProductsDTO productsDTO) {
         Products products = new Products(productsDTO.name(), productsDTO.price());
-        return productsService.updateProduct(id, products);
+        return productsService.update(id, products);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteProductById(@PathVariable Long id) {
-        productsService.deleteProductById(id);
+    public void deleteProductById(@PathVariable("id") Long id) {
+        productsService.deleteById(id);
     }
 
     @GetMapping("/calculate")
     public Double calculateAveragePrice() {
-        return productsService.calculateAveragePrice();
+        return productsService.calculate();
     }
 }

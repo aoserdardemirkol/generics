@@ -2,7 +2,6 @@ package com.adesso.generics.service;
 
 import com.adesso.generics.model.Expenses;
 import com.adesso.generics.repository.ExpensesJooqRepository;
-import com.adesso.generics.util.Calculate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,44 +9,45 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class ExpensesService {
-
-    private final Calculate calculate;
+public class ExpensesService implements BaseService<Expenses, Long> {
 
     private final ExpensesJooqRepository expensesRepository;
 
-    public ExpensesService(Calculate calculate, ExpensesJooqRepository expensesRepository) {
-        this.calculate = calculate;
+    public ExpensesService(ExpensesJooqRepository expensesRepository) {
         this.expensesRepository = expensesRepository;
     }
 
-    public Expenses createExpense(Expenses expenses) {
-        return expensesRepository.save(expenses);
+    @Override
+    public Expenses create(Expenses entity) {
+        return expensesRepository.save(entity);
     }
 
-    public Optional<Expenses> getExpenseById(Long id) {
+    @Override
+    public Optional<Expenses> getById(Long id) {
         return expensesRepository.findById(id);
     }
 
-    public List<Expenses> getExpenses() {
+    @Override
+    public List<Expenses> getAll() {
         return expensesRepository.findAll();
     }
 
-    public Expenses updateExpense(Long id, Expenses expenses) {
-        return expensesRepository.update(id, expenses);
+    @Override
+    public Expenses update(Long id, Expenses entity) {
+        return expensesRepository.update(id, entity);
     }
 
     public void delete(Expenses expenses) {
         expensesRepository.delete(expenses);
     }
 
-    public void deleteExpenseById(Long id) {
+    @Override
+    public void deleteById(Long id) {
         expensesRepository.deleteById(id);
     }
 
-    public Double calculateAverageExpenses() {
-        List<Expenses> expensesList = getExpenses();
-
-        return calculate.calculateAverage(expensesList.stream().map(Expenses::getCost).collect(Collectors.toList()));
+    @Override
+    public Double calculate() {
+        return expensesRepository.calculateAverage(getAll().stream().map(Expenses::getCost).collect(Collectors.toList()));
     }
 }

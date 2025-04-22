@@ -3,7 +3,6 @@ package com.adesso.generics.controller;
 import com.adesso.generics.model.Expenses;
 import com.adesso.generics.model.dto.ExpensesDTO;
 import com.adesso.generics.service.ExpensesService;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,27 +20,27 @@ public class ExpensesController {
     @PostMapping
     public Expenses createExpense(@RequestBody ExpensesDTO expensesDTO) {
         Expenses expenses = new Expenses(expensesDTO.name(), expensesDTO.cost());
-        return expensesService.createExpense(expenses);
+        return expensesService.create(expenses);
     }
 
     @GetMapping
     public List<Expenses> getAllProducts() {
-        return expensesService.getExpenses();
+        return expensesService.getAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getExpenseById(@PathVariable Long id) {
-        if (expensesService.getExpenseById(id).isPresent()) {
-            return ResponseEntity.ok().body(expensesService.getExpenseById(id).get());
+    public Expenses getExpenseById(@PathVariable("id") Long id) {
+        if (expensesService.getById(id).isPresent()) {
+            return expensesService.getById(id).get();
         } else {
-            return ResponseEntity.ok().body("No expense found with given id: " + id);
+            throw new IllegalArgumentException("No expense found with given id: " + id);
         }
     }
 
     @PutMapping("/{id}")
-    public Expenses updateExpense(@PathVariable Long id, @RequestBody ExpensesDTO expensesDTO) {
+    public Expenses updateExpense(@PathVariable("id") Long id, @RequestBody ExpensesDTO expensesDTO) {
         Expenses expenses = new Expenses(expensesDTO.name(), expensesDTO.cost());
-        return expensesService.updateExpense(id, expenses);
+        return expensesService.update(id, expenses);
     }
 
     @DeleteMapping
@@ -50,12 +49,12 @@ public class ExpensesController {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteExpenseById(@PathVariable Long id) {
-        expensesService.deleteExpenseById(id);
+    public void deleteExpenseById(@PathVariable("id") Long id) {
+        expensesService.deleteById(id);
     }
 
     @GetMapping("/calculate")
     public Double calculateAverageExpense() {
-        return expensesService.calculateAverageExpenses();
+        return expensesService.calculate();
     }
 }

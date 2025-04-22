@@ -87,7 +87,7 @@ public class JooqRepository<T, R extends UpdatableRecord<R>, ID> {
                 // kullanmadan nasıl yapılabilir
                 JQField dbFieldAnnotation = field.getAnnotation(JQField.class);
                 if (dbFieldAnnotation != null) {
-                    if (field.isAnnotationPresent(JQId.class))  {
+                    if (field.isAnnotationPresent(JQId.class)) {
                         continue;
                     }
 
@@ -187,6 +187,8 @@ public class JooqRepository<T, R extends UpdatableRecord<R>, ID> {
                     String columnName = dbFieldAnnotation.value();
                     Object value = record.get(DSL.field(DSL.name(columnName)));
                     field.set(entity, value);
+                } else {
+                    field.set(entity, record.get(DSL.field(DSL.name(field.getName()))));
                 }
             }
             return entity;
@@ -194,6 +196,10 @@ public class JooqRepository<T, R extends UpdatableRecord<R>, ID> {
                  InstantiationException e) {
             throw new RuntimeException("Error converting from record to entity", e);
         }
+    }
+
+    public double calculateAverage(List<? extends Number> list) {
+        return list.stream().mapToDouble(Number::doubleValue).average().orElse(0.0);
     }
 }
 
