@@ -7,13 +7,16 @@ import org.jooq.Field;
 import org.jooq.Table;
 import org.jooq.UpdatableRecord;
 import org.jooq.impl.DSL;
+import org.springframework.stereotype.Repository;
 import org.springframework.util.Assert;
 
+import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 // neden jooq kullandın?
-public class JooqRepository<T, R extends UpdatableRecord<R>, ID> {
+@Repository
+public class JooqRepository<T, R extends UpdatableRecord<R>, ID extends Serializable> implements JooqRepositoryImpl<T, R, ID> {
 
     private static final String ID_MUST_NOT_BE_NULL = "The given id must not be null";
     private static final String IDS_MUST_NOT_BE_NULL = "Ids must not be null";
@@ -32,6 +35,7 @@ public class JooqRepository<T, R extends UpdatableRecord<R>, ID> {
         this.recordClass = recordClass;
     }
 
+    @Override
     public T save(T entity) {
         R record = createRecordFromEntity(entity);
         record.attach(dsl.configuration());
@@ -39,6 +43,7 @@ public class JooqRepository<T, R extends UpdatableRecord<R>, ID> {
         return fromRecord(record);
     }
 
+    @Override
     public Optional<T> findById(ID id) {
         Assert.notNull(id, ID_MUST_NOT_BE_NULL);
 
@@ -47,6 +52,7 @@ public class JooqRepository<T, R extends UpdatableRecord<R>, ID> {
                 .fetchOneInto(entityClass));
     }
 
+    @Override
     public List<T> findAll() {
         return dsl.selectFrom(table)
                 .fetchInto(entityClass);
@@ -72,6 +78,7 @@ public class JooqRepository<T, R extends UpdatableRecord<R>, ID> {
                 .fetchInto(entityClass);
     }
 
+    @Override
     public T update(ID id, T entity) {
         try {
             R existingRecord = dsl.selectFrom(table)
@@ -87,7 +94,7 @@ public class JooqRepository<T, R extends UpdatableRecord<R>, ID> {
                 // kullanmadan nasıl yapılabilir
                 JQField dbFieldAnnotation = field.getAnnotation(JQField.class);
                 if (dbFieldAnnotation != null) {
-                    if (field.isAnnotationPresent(JQId.class))  {
+                    if (field.isAnnotationPresent(JQId.class)) {
                         continue;
                     }
 
@@ -105,6 +112,7 @@ public class JooqRepository<T, R extends UpdatableRecord<R>, ID> {
         }
     }
 
+    @Override
     public void deleteById(ID id) {
         Assert.notNull(id, ID_MUST_NOT_BE_NULL);
         dsl.deleteFrom(table)
@@ -112,6 +120,7 @@ public class JooqRepository<T, R extends UpdatableRecord<R>, ID> {
                 .execute();
     }
 
+    @Override
     public void delete(T entity) {
         try {
             Assert.notNull(entity, ENTITY_MUST_NOT_BE_NULL);
