@@ -18,6 +18,10 @@
         <jooq.version>3.20.3</jooq.version>
         <postgresql.version>42.7.5</postgresql.version>
         <lombok.version>1.18.38</lombok.version>
+        <flyway.version>11.7.2</flyway.version>
+        <db.url>jdbc:postgresql://localhost:5432/postgres</db.url>
+        <db.user>postgres</db.user>
+        <db.password>postgres</db.password>
     </properties>
     <dependencies>
         <dependency>
@@ -34,6 +38,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+            <version>${flyway.version}</version>
         </dependency>
 
         <dependency>
@@ -75,6 +85,29 @@
             </plugin>
 
             <plugin>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <version>${flyway.version}</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>migrate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+
+                <configuration>
+                    <url>${db.url}</url>
+                    <user>${db.user}</user>
+                    <password>${db.password}</password>
+                    <locations>
+                        <location>filesystem:src/main/resources/db/migration</location>
+                    </locations>
+                </configuration>
+            </plugin>
+
+            <plugin>
                 <groupId>org.jooq</groupId>
                 <artifactId>jooq-codegen-maven</artifactId>
                 <version>${jooq.version}</version>
@@ -88,14 +121,15 @@
                         <configuration>
                             <jdbc>
                                 <driver>org.postgresql.Driver</driver>
-                                <url>jdbc:postgresql://localhost:5432/postgres</url>
-                                <username>postgres</username>
-                                <password>postgres</password>
+                                <url>${db.url}</url>
+                                <username>${db.user}</username>
+                                <password>${db.password}</password>
                             </jdbc>
 
                             <generator>
                                 <database>
                                     <name>org.jooq.meta.postgres.PostgresDatabase</name>
+                                    <inputSchema>public</inputSchema>
                                     <includes>.*</includes>
                                 </database>
                                 <generate>
