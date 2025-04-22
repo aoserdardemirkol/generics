@@ -5,9 +5,9 @@ import com.adesso.generics.repository.ProductsJooqRepository;
 import com.adesso.generics.util.Calculate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductsService {
@@ -42,11 +42,8 @@ public class ProductsService {
     }
 
     public Double calculateAveragePrice() {
-        List<Double> productValues = new ArrayList<>();
         List<Products> productsList = getProducts();
 
-        productsList.forEach(product -> productValues.add(product.getPrice()));
-
-        return calculate.calculateAverage(productValues);
+        return calculate.calculateAverage(productsList.stream().map(Products::getPrice).collect(Collectors.toList()));
     }
 }

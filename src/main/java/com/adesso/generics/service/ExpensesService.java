@@ -5,9 +5,9 @@ import com.adesso.generics.repository.ExpensesJooqRepository;
 import com.adesso.generics.util.Calculate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ExpensesService {
@@ -46,11 +46,8 @@ public class ExpensesService {
     }
 
     public Double calculateAverageExpenses() {
-        List<Float> expenseValues = new ArrayList<>();
         List<Expenses> expensesList = getExpenses();
 
-        expensesList.forEach(expense -> expenseValues.add(expense.getCost()));
-
-        return calculate.calculateAverage(expenseValues);
+        return calculate.calculateAverage(expensesList.stream().map(Expenses::getCost).collect(Collectors.toList()));
     }
 }

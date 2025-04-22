@@ -3,6 +3,7 @@ package com.adesso.generics.controller;
 import com.adesso.generics.model.Expenses;
 import com.adesso.generics.model.dto.ExpensesDTO;
 import com.adesso.generics.service.ExpensesService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,8 +30,12 @@ public class ExpensesController {
     }
 
     @GetMapping("/{id}")
-    public Expenses getExpenseById(@PathVariable Long id) {
-        return expensesService.getExpenseById(id).orElse(null);
+    public ResponseEntity<?> getExpenseById(@PathVariable Long id) {
+        if (expensesService.getExpenseById(id).isPresent()) {
+            return ResponseEntity.ok().body(expensesService.getExpenseById(id).get());
+        } else {
+            return ResponseEntity.ok().body("No expense found with given id: " + id);
+        }
     }
 
     @PutMapping("/{id}")
