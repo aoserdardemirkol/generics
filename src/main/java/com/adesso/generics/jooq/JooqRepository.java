@@ -17,7 +17,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-// neden jooq kullandın?
 public class JooqRepository<T, R extends UpdatableRecord<R>, ID> {
 
     private static final String ID_MUST_NOT_BE_NULL = "The given id must not be null";
@@ -143,7 +142,10 @@ public class JooqRepository<T, R extends UpdatableRecord<R>, ID> {
     }
 
     public double calculateAverage(List<? extends Number> list) {
-        return list.stream().mapToDouble(Number::doubleValue).average().orElse(0.0);
+        return list.stream()
+                .mapToDouble(Number::doubleValue)
+                .average()
+                .orElse(0.0);
     }
 
     private boolean equals(Object obj1, Object obj2) {

@@ -50,4 +50,9 @@ public class Expenses {
     public void setCost(Float cost) {
         this.cost = cost;
     }
+
+    @Override
+    public String toString() {
+        return "Expenses{name='" + name + "', cost=" + cost + "}";
+    }
 }

@@ -2,6 +2,7 @@ package com.adesso.generics.service;
 
 import com.adesso.generics.model.Products;
 import com.adesso.generics.repository.ProductsJooqRepository;
+import com.adesso.generics.util.Logger;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,6 +11,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class ProductsService implements BaseService<Products, Long> {
+
+    private final Logger logger = new Logger();
 
     private final ProductsJooqRepository productsRepository;
 
@@ -29,7 +32,9 @@ public class ProductsService implements BaseService<Products, Long> {
 
     @Override
     public List<Products> getAll() {
-        return productsRepository.findAll();
+        List<Products> products = productsRepository.findAll();
+        logger.logList(products);
+        return products;
     }
 
     @Override

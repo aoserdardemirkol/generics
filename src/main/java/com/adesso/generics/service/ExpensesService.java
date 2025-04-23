@@ -2,6 +2,7 @@ package com.adesso.generics.service;
 
 import com.adesso.generics.model.Expenses;
 import com.adesso.generics.repository.ExpensesJooqRepository;
+import com.adesso.generics.util.Logger;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,6 +11,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class ExpensesService implements BaseService<Expenses, Long> {
+
+    private final Logger logger = new Logger();
 
     private final ExpensesJooqRepository expensesRepository;
 
@@ -29,7 +32,9 @@ public class ExpensesService implements BaseService<Expenses, Long> {
 
     @Override
     public List<Expenses> getAll() {
-        return expensesRepository.findAll();
+        List<Expenses> expenses = expensesRepository.findAll();
+        logger.logList(expenses);
+        return expenses;
     }
 
     @Override
@@ -37,6 +42,7 @@ public class ExpensesService implements BaseService<Expenses, Long> {
         return expensesRepository.update(id, entity);
     }
 
+    @Override
     public void delete(Expenses expenses) {
         expensesRepository.delete(expenses);
     }
