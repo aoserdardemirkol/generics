@@ -19,7 +19,7 @@ public class ProductsController {
 
     @PostMapping
     public Products createProduct(@RequestBody ProductsDTO productsDTO) {
-        Products products = new Products(productsDTO.name(), productsDTO.price());
+        Products products = new Products(productsDTO.getName(), productsDTO.getPrice());
         return productsService.create(products);
     }
 
@@ -39,7 +39,7 @@ public class ProductsController {
 
     @PutMapping("/{id}")
     public Products updateProduct(@PathVariable("id") Long id, @RequestBody ProductsDTO productsDTO) {
-        Products products = new Products(productsDTO.name(), productsDTO.price());
+        Products products = new Products(productsDTO.getName(), productsDTO.getPrice());
         return productsService.update(id, products);
     }
 

@@ -2,6 +2,8 @@ package com.adesso.generics.jooq;
 
 import com.adesso.generics.annotations.JQField;
 import com.adesso.generics.annotations.JQId;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Table;
@@ -10,7 +12,10 @@ import org.jooq.impl.DSL;
 import org.springframework.util.Assert;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 // neden jooq kullandın?
 public class JooqRepository<T, R extends UpdatableRecord<R>, ID> {
@@ -33,7 +38,7 @@ public class JooqRepository<T, R extends UpdatableRecord<R>, ID> {
     }
 
     public T save(T entity) {
-        R record = createRecordFromEntity(entity);
+        R record = fromEntity(entity);
         record.attach(dsl.configuration());
         record.store();
         return fromRecord(record);
@@ -62,14 +67,6 @@ public class JooqRepository<T, R extends UpdatableRecord<R>, ID> {
         }
 
         return results;
-    }
-
-    public List<T> findAllByIdBatch(Collection<? extends ID> ids) {
-        Assert.notNull(ids, IDS_MUST_NOT_BE_NULL);
-
-        return dsl.selectFrom(table)
-                .where(getId().in(ids))
-                .fetchInto(entityClass);
     }
 
     public T update(ID id, T entity) {
@@ -116,9 +113,15 @@ public class JooqRepository<T, R extends UpdatableRecord<R>, ID> {
         try {
             Assert.notNull(entity, ENTITY_MUST_NOT_BE_NULL);
 
-            java.lang.reflect.Field field = getEntityField();
+            java.lang.reflect.Field field = getIdOfEntity();
             field.setAccessible(true);
-            deleteById((ID) field.get(entity));
+            ID idInEntity = (ID) field.get(entity);
+            Optional<T> valueInDB = findById(idInEntity);
+            if (valueInDB.isPresent() && equals(valueInDB.get(), entity)) {
+                deleteById(idInEntity);
+            } else {
+                throw new IllegalArgumentException("Record not found with given values");
+            }
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
@@ -139,33 +142,51 @@ public class JooqRepository<T, R extends UpdatableRecord<R>, ID> {
         }
     }
 
-    public void deleteAllByIdBatch(Collection<? extends ID> ids) {
-        dsl.deleteFrom(table)
-                .where(getId().in(ids))
-                .execute();
+    public double calculateAverage(List<? extends Number> list) {
+        return list.stream().mapToDouble(Number::doubleValue).average().orElse(0.0);
     }
 
+    private boolean equals(Object obj1, Object obj2) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            String json1 = mapper.writeValueAsString(obj1);
+            String json2 = mapper.writeValueAsString(obj2);
+            return json1.equals(json2);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // returns T.ID
     private Field<ID> getId() {
-        java.lang.reflect.Field field = getEntityField();
+        java.lang.reflect.Field field = getIdOfEntity();
         String columnName = field.getName();
         return (Field<ID>) table.field(DSL.name(columnName), field.getType());
     }
 
-    private java.lang.reflect.Field getEntityField() {
+    // returns the ID field of the entity class
+    private java.lang.reflect.Field getIdOfEntity() {
         return Arrays.stream(entityClass.getDeclaredFields())
                 .filter(f -> f.isAnnotationPresent(JQId.class))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("No ID field found"));
     }
 
-    private R createRecordFromEntity(T entity) {
+    private R fromEntity(T entity) {
         try {
             R record = recordClass.getDeclaredConstructor().newInstance();
             for (java.lang.reflect.Field field : entityClass.getDeclaredFields()) {
+                // set accessible to true to access private fields
                 field.setAccessible(true);
-                if (field.isAnnotationPresent(JQField.class)) {
+                // if field is annotated with @JQId, skip it, else use the field name in the annotation value or else use the field name
+                if (field.isAnnotationPresent(JQId.class)) {
+                    continue;
+                } else if (field.isAnnotationPresent(JQField.class)) {
                     JQField dbFieldAnnotation = field.getAnnotation(JQField.class);
                     Field<Object> columnField = DSL.field(DSL.name(dbFieldAnnotation.value()));
+                    record.set(columnField, field.get(entity));
+                } else {
+                    Field<Object> columnField = DSL.field(DSL.name(field.getName()));
                     record.set(columnField, field.get(entity));
                 }
             }
@@ -181,7 +202,9 @@ public class JooqRepository<T, R extends UpdatableRecord<R>, ID> {
             T entity = entityClass.getDeclaredConstructor().newInstance();
 
             for (java.lang.reflect.Field field : entityClass.getDeclaredFields()) {
+                // set accessible to true to access private fields
                 field.setAccessible(true);
+                // if field is not annotated with @JQField, use the field name as the column name or else use the field name in the annotation value
                 if (field.isAnnotationPresent(JQField.class)) {
                     JQField dbFieldAnnotation = field.getAnnotation(JQField.class);
                     String columnName = dbFieldAnnotation.value();
@@ -196,10 +219,6 @@ public class JooqRepository<T, R extends UpdatableRecord<R>, ID> {
                  InstantiationException e) {
             throw new RuntimeException("Error converting from record to entity", e);
         }
-    }
-
-    public double calculateAverage(List<? extends Number> list) {
-        return list.stream().mapToDouble(Number::doubleValue).average().orElse(0.0);
     }
 }
 

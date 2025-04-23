@@ -19,12 +19,12 @@ public class ExpensesController {
 
     @PostMapping
     public Expenses createExpense(@RequestBody ExpensesDTO expensesDTO) {
-        Expenses expenses = new Expenses(expensesDTO.name(), expensesDTO.cost());
+        Expenses expenses = new Expenses(expensesDTO.getName(), expensesDTO.getCost());
         return expensesService.create(expenses);
     }
 
     @GetMapping
-    public List<Expenses> getAllProducts() {
+    public List<Expenses> getAllExpenses() {
         return expensesService.getAll();
     }
 
@@ -39,7 +39,7 @@ public class ExpensesController {
 
     @PutMapping("/{id}")
     public Expenses updateExpense(@PathVariable("id") Long id, @RequestBody ExpensesDTO expensesDTO) {
-        Expenses expenses = new Expenses(expensesDTO.name(), expensesDTO.cost());
+        Expenses expenses = new Expenses(expensesDTO.getName(), expensesDTO.getCost());
         return expensesService.update(id, expenses);
     }
 

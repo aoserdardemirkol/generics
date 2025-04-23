@@ -11,7 +11,6 @@ public class Expenses {
     @JQField("name")
     private String name;
 
-    @JQField("cost")
     private Float cost;
 
     public Expenses() {
