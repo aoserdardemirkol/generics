@@ -23,6 +23,12 @@ public class ProductsController {
         return productsService.create(products);
     }
 
+    @PostMapping("/alternative")
+    public Products alternativeCreateProduct(@RequestBody ProductsDTO productsDTO) {
+        Products products = new Products(productsDTO.getName(), productsDTO.getPrice());
+        return productsService.alternativeCreate(products);
+    }
+
     @GetMapping
     public List<Products> getAllProducts() {
         return productsService.getAll();

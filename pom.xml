@@ -126,7 +126,7 @@
                                     <includes>.*</includes>
                                 </database>
                                 <generate>
-                                    <daos>false</daos>
+                                    <daos>true</daos>
                                     <pojos>true</pojos>
                                     <records>true</records>
                                 </generate>

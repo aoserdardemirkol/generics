@@ -25,6 +25,10 @@ public class ProductsService implements BaseService<Products, Long> {
         return productsRepository.save(entity);
     }
 
+    public Products alternativeCreate(Products entity) {
+        return productsRepository.alternativeSave(entity);
+    }
+
     @Override
     public Optional<Products> getById(Long id) {
         return productsRepository.findById(id);

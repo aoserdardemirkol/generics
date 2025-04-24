@@ -2,12 +2,12 @@ CREATE TABLE products
 (
     id    BIGSERIAL PRIMARY KEY,
     name  VARCHAR(255),
-    price NUMERIC
+    price DOUBLE PRECISION
 );
 
 CREATE TABLE expenses
 (
     id   BIGSERIAL PRIMARY KEY,
     name VARCHAR(255),
-    cost NUMERIC
+    cost FLOAT
 );

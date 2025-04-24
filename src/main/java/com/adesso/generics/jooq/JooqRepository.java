@@ -43,6 +43,13 @@ public class JooqRepository<T, R extends UpdatableRecord<R>, ID> {
         return fromRecord(record);
     }
 
+    public T alternativeSave(T entity) {
+        R record = dsl.newRecord(table, entity);
+        record.attach(dsl.configuration());
+        record.store();
+        return fromRecord(record);
+    }
+
     public Optional<T> findById(ID id) {
         Assert.notNull(id, ID_MUST_NOT_BE_NULL);
 
@@ -80,7 +87,6 @@ public class JooqRepository<T, R extends UpdatableRecord<R>, ID> {
 
             for (java.lang.reflect.Field field : entityClass.getDeclaredFields()) {
                 field.setAccessible(true);
-                // kullanmadan nasıl yapılabilir
                 JQField dbFieldAnnotation = field.getAnnotation(JQField.class);
                 if (dbFieldAnnotation != null) {
                     if (field.isAnnotationPresent(JQId.class)) {
@@ -93,7 +99,8 @@ public class JooqRepository<T, R extends UpdatableRecord<R>, ID> {
             }
 
             existingRecord.attach(dsl.configuration());
-            existingRecord.update();
+            existingRecord.store();
+            // existingRecord.update(); kullanılabilir
 
             return fromRecord(existingRecord);
         } catch (IllegalAccessException e) {
